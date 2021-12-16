@@ -9,9 +9,14 @@ class ChessGame(Game):
     def __init__(self):
         super().__init__()
         self.board = chess.Board()
-        self.action_names = {
-            x * y: chess.Move(x, y) for x in chess.SQUARES for y in chess.SQUARES
-        }
+
+        self.action_names = {}
+
+        counter = 0
+        for square_from in chess.SQUARES:
+            for square_to in chess.SQUARES:
+                self.action_names[counter] = chess.Move(square_from, square_to)
+                counter += 1
 
     def getInitBoard(self):
         return encode_board(self.board)
@@ -32,11 +37,14 @@ class ChessGame(Game):
 
         print(f"getNextState: {action}")
 
-        decoded_action = self.action_names[action]
+        decoded_move = self.action_names[action]
+        print(f"move: {decoded_move}")
 
-        decoded_board.push(decoded_action)
-
-        return encode_board(decoded_board), player * -1
+        piece = decoded_board.piece_at(decoded_move.from_square)
+        decoded_board.remove_piece_at(decoded_move.from_square)
+        decoded_board.set_piece_at(decoded_move.to_square, piece)
+        print(encode_board(decoded_board))
+        return encode_board(decoded_board), -player
 
     def getValidMoves(self, board, player):
         decoded_board = get_board(board, player)
@@ -127,8 +135,19 @@ def get_board(encoded_board: np.array, player: int):
 # print(b)
 
 game = ChessGame()
+
+# board = chess.Board()
+#
+# print(board, end="\n---\n")
+# move: chess.Move = list(board.legal_moves)[0]
+# piece: chess.Piece = board.piece_at(move.from_square)
+# board.remove_piece_at(list(board.legal_moves)[0].from_square)
+# print(board, end="\n---\n")
+# board.set_piece_at(move.to_square, piece)
+# print(board)
+
 valids = game.getValidMoves(encode_board(chess.Board()), 1)
 print(chess.Move.from_uci("b2b3") in chess.Board().legal_moves)
-for move in valids:
+for i, move in enumerate(valids):
     if move == 1:
-        print(f"Valid move: {move}")
+        print(f"Valid move: {game.action_names[i]}")
