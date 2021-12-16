@@ -57,7 +57,6 @@ class Coach():
 
             pi = self.mcts.getActionProb(canonicalBoard, temp=temp)
             sym = self.game.getSymmetries(canonicalBoard, pi)
-            print(f"length of sym: {len(sym)}")
             for b, p in sym:
                 trainExamples.append([b, self.curPlayer, p, None])
 

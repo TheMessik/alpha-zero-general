@@ -8,7 +8,7 @@ import tensorflow as tf
 from numpy import ndarray
 
 from NeuralNet import NeuralNet
-from chess_game.ChessGame import ChessGame, decode_board
+from chess_game.ChessGame import ChessGame
 from utils import dotdict
 
 args = dotdict(
@@ -31,7 +31,6 @@ class ChessNetwork(NeuralNet):
         self.model = self.get_model(game.getBoardSize(), game.getActionSize(), args)
 
     def train(self, examples):
-        print(examples)
         input_boards, target_pis, target_vs = list(zip(*examples))
         input_boards = np.asarray(input_boards)
         target_pis = np.asarray(target_pis)
@@ -49,9 +48,6 @@ class ChessNetwork(NeuralNet):
         """
                 board: np array with board
                 """
-
-        print(f"Board in predict:\n{decode_board(board)}")
-
         # run
         pi, v = self.model.predict(ndarray.reshape(board, (1, 48, 8)))
         return pi[0], v[0]

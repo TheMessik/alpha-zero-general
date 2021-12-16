@@ -35,15 +35,11 @@ class ChessGame(Game):
     def getNextState(self, board, player, action):
         decoded_board = get_board(board, player)
 
-        print(f"getNextState: {action}")
-
         decoded_move = self.action_names[action]
-        print(f"move: {decoded_move}")
 
         piece = decoded_board.piece_at(decoded_move.from_square)
         decoded_board.remove_piece_at(decoded_move.from_square)
         decoded_board.set_piece_at(decoded_move.to_square, piece)
-        print(encode_board(decoded_board))
         return encode_board(decoded_board), -player
 
     def getValidMoves(self, board, player):
@@ -73,7 +69,7 @@ class ChessGame(Game):
         return board
 
     def getSymmetries(self, board, pi):
-        return board, pi
+        return [(board, pi)]
 
     def stringRepresentation(self, board):
         return get_board(board, chess.WHITE).fen()
@@ -99,11 +95,11 @@ def encode_board(board: chess.Board) -> np.array:
     return np.concatenate(list(planes.values()))
 
 
-def decode_board(board: np.array) -> chess.Board:
-    parsed_board = chess.Board()
+def get_board(encoded_board: np.array, player: int):
+    decoded_board = chess.Board()
 
     for i, piece_name in enumerate(["K", "Q", "B", "N", "R", "P"]):
-        section = board[i * 8: i * 8 + 8]
+        section = encoded_board[i * 8: i * 8 + 8]
 
         for rank_num, rank in enumerate(section):
             for file_num, file in enumerate(rank):
@@ -117,13 +113,8 @@ def decode_board(board: np.array) -> chess.Board:
 
                 if adapted_piece is not None:
                     parsed_piece = chess.Piece.from_symbol(adapted_piece)
-                    parsed_board.set_piece_at(square, parsed_piece)
+                    decoded_board.set_piece_at(square, parsed_piece)
 
-    return parsed_board
-
-
-def get_board(encoded_board: np.array, player: int):
-    decoded_board = decode_board(encoded_board)
     decoded_board.turn = player == 1
 
     return decoded_board
@@ -134,7 +125,7 @@ def get_board(encoded_board: np.array, player: int):
 # decode_board(encode_board(chess.Board()))
 # print(b)
 
-game = ChessGame()
+# game = ChessGame()
 
 # board = chess.Board()
 #
@@ -146,8 +137,8 @@ game = ChessGame()
 # board.set_piece_at(move.to_square, piece)
 # print(board)
 
-valids = game.getValidMoves(encode_board(chess.Board()), 1)
-print(chess.Move.from_uci("b2b3") in chess.Board().legal_moves)
-for i, move in enumerate(valids):
-    if move == 1:
-        print(f"Valid move: {game.action_names[i]}")
+# valids = game.getValidMoves(encode_board(chess.Board()), 1)
+# print(chess.Move.from_uci("b2b3") in chess.Board().legal_moves)
+# for i, move in enumerate(valids):
+#     if move == 1:
+#         print(f"Valid move: {game.action_names[i]}")
