@@ -10,7 +10,7 @@ class ChessGame(Game):
         super().__init__()
         self.board = chess.Board()
         self.action_names = {
-            move.uci(): move for move in [chess.Move(x, y) for x in chess.SQUARES for y in chess.SQUARES]
+            x * y: chess.Move(x, y) for x in chess.SQUARES for y in chess.SQUARES
         }
 
     def getInitBoard(self):
@@ -30,6 +30,8 @@ class ChessGame(Game):
     def getNextState(self, board, player, action):
         decoded_board = get_board(board, player)
 
+        print(f"getNextState: {action}")
+
         decoded_action = self.action_names[action]
 
         decoded_board.push(decoded_action)
@@ -38,7 +40,7 @@ class ChessGame(Game):
 
     def getValidMoves(self, board, player):
         decoded_board = get_board(board, player)
-        valid_moves = np.array((1, self.get_action_size()))
+        valid_moves = np.zeros(shape=(self.getActionSize()))
 
         for i, move in enumerate(self.action_names.values()):
             if move in decoded_board.legal_moves:
@@ -92,34 +94,41 @@ def encode_board(board: chess.Board) -> np.array:
 def decode_board(board: np.array) -> chess.Board:
     parsed_board = chess.Board()
 
-    def parse_plane(plane: np.array, piece: str, real_board: chess.Board):
-        for rank_num, rank in enumerate(plane):
+    for i, piece_name in enumerate(["K", "Q", "B", "N", "R", "P"]):
+        section = board[i * 8: i * 8 + 8]
+
+        for rank_num, rank in enumerate(section):
             for file_num, file in enumerate(rank):
                 square = chess.square(file_num, rank_num)
                 if file == 1:
-                    piece = piece.upper()
+                    adapted_piece = piece_name.upper()
+                elif file == -1:
+                    adapted_piece = piece_name.lower()
                 else:
-                    piece = piece.lower()
-                parsed_piece = chess.Piece.from_symbol(piece.upper()) if file == 1 else chess.Piece.from_symbol(
-                    piece.lower())
+                    adapted_piece = None
 
-                real_board.set_piece_at(square, parsed_piece)
-
-    for i, piece in enumerate(["K", "Q", "B", "N", "R", "P"]):
-        plane = board[i * 8: i * 8 + 8]
-        parse_plane(plane, piece, parsed_board)
+                if adapted_piece is not None:
+                    parsed_piece = chess.Piece.from_symbol(adapted_piece)
+                    parsed_board.set_piece_at(square, parsed_piece)
 
     return parsed_board
 
 
 def get_board(encoded_board: np.array, player: int):
     decoded_board = decode_board(encoded_board)
-    decoded_board.turn = chess.WHITE if player == 1 else chess.BLACK
+    decoded_board.turn = player == 1
 
     return decoded_board
 
-#
-# b = Board()
-# b.push(chess_game.Move.from_uci("a2a4"))
-# decode_board(encode_board(Board()))
+
+# b = chess.Board()
+# b.push(chess.Move.from_uci("a2a4"))
+# decode_board(encode_board(chess.Board()))
 # print(b)
+
+game = ChessGame()
+valids = game.getValidMoves(encode_board(chess.Board()), 1)
+print(chess.Move.from_uci("b2b3") in chess.Board().legal_moves)
+for move in valids:
+    if move == 1:
+        print(f"Valid move: {move}")

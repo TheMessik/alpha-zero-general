@@ -5,9 +5,10 @@ from keras import Model, Sequential, Input
 from keras.layers import Dense, Reshape, Activation, BatchNormalization, Conv2D, Flatten, Dropout
 from keras.optimizer_v2.adam import Adam
 import tensorflow as tf
+from numpy import ndarray
 
 from NeuralNet import NeuralNet
-from chess_game.ChessGame import ChessGame
+from chess_game.ChessGame import ChessGame, decode_board
 from utils import dotdict
 
 args = dotdict(
@@ -49,10 +50,10 @@ class ChessNetwork(NeuralNet):
                 board: np array with board
                 """
 
-        print(board.shape)
+        print(f"Board in predict:\n{decode_board(board)}")
 
         # run
-        pi, v = self.model.predict(board)
+        pi, v = self.model.predict(ndarray.reshape(board, (1, 48, 8)))
         return pi[0], v[0]
 
     def save_checkpoint(
