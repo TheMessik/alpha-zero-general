@@ -48,8 +48,10 @@ class ChessNetwork(NeuralNet):
         """
                 board: np array with board
                 """
+
+        prep_board = ndarray.reshape(board, (1, 6, 8, 8))
         # run
-        pi, v = self.model.predict(ndarray.reshape(board, (1, 48, 8)))
+        pi, v = self.model.predict(prep_board)
         return pi[0], v[0]
 
     def save_checkpoint(
@@ -83,15 +85,15 @@ class ChessNetwork(NeuralNet):
 
     def get_model(self, board_size, action_size, args):
         # game params
-        board_x, board_y = board_size
+        planes, board_x, board_y = board_size
         action_size = action_size
 
         # Neural Net
 
         # s: batch_size x board_x x board_y
-        input_boards = Input(shape=(board_x, board_y))
+        input_boards = Input(shape=(planes, board_x, board_y))
         # batch_size  x board_x x board_y x 1
-        x_image = Reshape((board_x, board_y, 1))(input_boards)
+        x_image = Reshape((planes, board_x, board_y, 1))(input_boards)
         # batch_size  x board_x x board_y x num_channels
         h_conv1 = Activation("relu")(
             BatchNormalization(axis=3)(

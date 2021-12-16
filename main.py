@@ -7,25 +7,29 @@ from chess_game.ChessGame import ChessGame
 from chess_game.chessnetwork import ChessNetwork as nn
 from utils import *
 
-import sys
+import resource, sys
 
 log = logging.getLogger(__name__)
 
 coloredlogs.install(level='INFO')  # Change this to DEBUG to see more info.
-sys.setrecursionlimit(10000)
+
+
+resource.setrlimit(resource.RLIMIT_STACK, (2 ** 29, -1))
+sys.setrecursionlimit(10 ** 6)
 args = dotdict({
     'numIters': 100,
-    'numEps': 100,              # Number of complete self-play games to simulate during a new iteration.
-    'tempThreshold': 15,        #
-    'updateThreshold': 0.6,     # During arena playoff, new neural net will be accepted if threshold or more of games are won.
-    'maxlenOfQueue': 200000,    # Number of game examples to train the neural networks.
-    'numMCTSSims': 25,          # Number of games moves for MCTS to simulate.
-    'arenaCompare': 40,         # Number of games to play during arena play to determine if new net will be accepted.
+    'numEps': 1,  # Number of complete self-play games to simulate during a new iteration.
+    'tempThreshold': 15,  #
+    'updateThreshold': 0.6,
+    # During arena playoff, new neural net will be accepted if threshold or more of games are won.
+    'maxlenOfQueue': 200000,  # Number of game examples to train the neural networks.
+    'numMCTSSims': 25,  # Number of games moves for MCTS to simulate.
+    'arenaCompare': 40,  # Number of games to play during arena play to determine if new net will be accepted.
     'cpuct': 1,
 
     'checkpoint': './temp/',
     'load_model': False,
-    'load_folder_file': ('/dev/models/8x100x50','best.pth.tar'),
+    'load_folder_file': ('/dev/models/8x100x50', 'best.pth.tar'),
     'numItersForTrainExamplesHistory': 20,
 
 })
