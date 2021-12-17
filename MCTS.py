@@ -3,6 +3,8 @@ import math
 
 import numpy as np
 
+from utils import encode_board
+
 EPS = 1e-8
 
 log = logging.getLogger(__name__)
@@ -82,7 +84,9 @@ class MCTS():
 
         if s not in self.Ps:
             # leaf node
-            self.Ps[s], v = self.nnet.predict(canonicalBoard)
+            # first encode and then feed
+            encoded = encode_board(canonicalBoard)
+            self.Ps[s], v = self.nnet.predict(encoded)
             valids = self.game.getValidMoves(canonicalBoard, 1)
             self.Ps[s] = self.Ps[s] * valids  # masking invalid moves
             sum_Ps_s = np.sum(self.Ps[s])
@@ -120,7 +124,10 @@ class MCTS():
 
         a = best_act
         next_s, next_player = self.game.getNextState(canonicalBoard, 1, a)
+        print(next_s, end="\n---\n")
         next_s = self.game.getCanonicalForm(next_s, next_player)
+
+
 
         v = self.search(next_s)
 
