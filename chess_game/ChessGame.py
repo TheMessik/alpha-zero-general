@@ -5,6 +5,22 @@ from Game import Game
 from utils import encode_board
 
 
+# encodings and mirror_move based on
+# https://github.com/yeekit24/alpha-zero-general/blob/3fa23d76ed618f732e9485bd1bd6a44835e353a5/_chess/ChessGame.py
+def from_move(move: chess.Move):
+    return move.from_square * 64 + move.to_square
+
+
+def to_move(action: int):
+    to_sq = action % 64
+    from_sq = int(action / 64)
+    return chess.Move(from_sq, to_sq)
+
+
+def mirror_move(move: chess.Move):
+    return chess.Move(chess.square_mirror(move.from_square), chess.square_mirror(move.to_square))
+
+
 class ChessGame(Game):
 
     def __init__(self):
@@ -35,7 +51,11 @@ class ChessGame(Game):
         return self.action_names
 
     def getNextState(self, board: chess.Board, player, action):
-        decoded_move = self.action_names[action]
+        decoded_move = to_move(action)
+
+        if not board.turn:
+            decoded_move = mirror_move(decoded_move)
+
         b = board.copy()
         b.push(decoded_move)
 
@@ -44,9 +64,9 @@ class ChessGame(Game):
     def getValidMoves(self, board: chess.Board, player):
         valid_moves = np.zeros(shape=(self.getActionSize()))
 
-        for i, move in enumerate(self.action_names.values()):
-            if move in board.legal_moves:
-                valid_moves[i] = 1
+        for move in board.legal_moves:
+            move_index = from_move(move)
+            valid_moves[move_index] = 1
 
         return valid_moves
 
